@@ -1,0 +1,19 @@
+# Changes here will be overwritten by Copier; NEVER EDIT MANUALLY
+_commit: v4.6.4
+_src_path: https://github.com/jupyterlab/extension-template
+advanced: true
+author_email: noamziv0310@gmail.com
+author_name: Noam Ziv
+has_ai_rules: false
+has_binder: false
+has_settings: true
+kind: frontend-and-server
+labextension_name: pod-sentinel
+project_short_description: A JupyterLab extension for Cloudera AI runtime that monitors
+    your Kubernetes namespace for pending pods and alerts you when resource constraints
+    may be blocking your workloads.
+python_name: pod_sentinel
+repository: https://github.com/noamz1v/pod-sentinel
+test: false
+yarn_linker: node-modules
+

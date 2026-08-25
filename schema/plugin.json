@@ -1,0 +1,8 @@
+{
+  "jupyter.lab.shortcuts": [],
+  "title": "pod-sentinel",
+  "description": "pod-sentinel settings.",
+  "type": "object",
+  "properties": {},
+  "additionalProperties": false
+}
