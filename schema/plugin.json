@@ -1,8 +1,36 @@
 {
   "jupyter.lab.shortcuts": [],
-  "title": "pod-sentinel",
-  "description": "pod-sentinel settings.",
+  "title": "Pod Sentinel",
+  "description": "Settings for the Pod Sentinel extension.",
   "type": "object",
-  "properties": {},
+  "properties": {
+    "enable_pod_sentinel_polling": {
+      "title": "Enable Pod Sentinel Polling",
+      "description": "Enable or disable alerts for pending pods in your namespace.",
+      "type": "boolean",
+      "default": true
+    },
+    "poll_interval": {
+      "title": "Polling Interval",
+      "description": "Time interval in seconds between each check for pending pods performed by the extension.",
+      "type": "integer",
+      "default": 45,
+      "minimum": 1
+    },
+    "grace_period_seconds": {
+      "title": "Grace Period",
+      "description": "Time in seconds to wait before considering a pending pod as problematic and eligible for notifications.",
+      "type": "integer",
+      "default": 60,
+      "minimum": 0
+    },
+    "max_notifications_per_pod": {
+      "title": "Max Notifications Per Pod",
+      "description": "Maximum number of notifications to send for each pod before stopping further alerts. Default is 2, meaning after a pod generated 2 alerts he won't get accounted for further alerts and sentinel will ignore it.",
+      "type": "integer",
+      "default": 2,
+      "minimum": 0
+    }
+  },
   "additionalProperties": false
 }
