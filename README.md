@@ -1,7 +1,5 @@
 # pod_sentinel
 
-[![Github Actions Status](https://github.com/noamz1v/pod-sentinel/workflows/Build/badge.svg)](https://github.com/noamz1v/pod-sentinel/actions/workflows/build.yml)
-
 A JupyterLab extension for Cloudera AI runtime that monitors your Kubernetes namespace for pending pods and alerts you when resource constraints may be blocking your workloads.
 
 This extension is composed of a Python package named `pod_sentinel`
