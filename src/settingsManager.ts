@@ -5,7 +5,7 @@ import {
     setPollingInterval,
     enablePolling,
     disablePolling,
-    getPollingState
+    isPollingEnabled
 } from './pollingManager';
 import {startPolling} from './pollingScheduler';
 import {updateBackendConfig} from './podService';
@@ -51,10 +51,9 @@ export async function loadSettings(settingRegistry: ISettingRegistry): Promise<v
             const updated = readSettings(settings, 'New');
 
             setPollingInterval(updated.pollIntervalMs);
-            const currentState = getPollingState();
 
             // Handle polling enable/disable
-            if (updated.pollingEnabled !== currentState.pollingEnabled) {
+            if (updated.pollingEnabled !== isPollingEnabled()) {
                 if (updated.pollingEnabled) {
                     enablePolling();
                     startPolling();

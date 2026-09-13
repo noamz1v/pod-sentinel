@@ -1,7 +1,9 @@
 import {showErrorMessage} from '@jupyterlab/apputils';
 import {queryPendingPodsStatus} from './podService';
 import {
-    getPollingState,
+    isPollingEnabled,
+    isCurrentlyPolling,
+    getPollInterval,
     setIsPolling,
     setPollingTimeoutId,
     stopPolling
@@ -9,16 +11,14 @@ import {
 import {PendingPodsResponse} from './types';
 
 async function pollPendingPodsStatus(): Promise<void> {
-    const state = getPollingState();
-
     // Check if polling is enabled before starting
-    if (!state.pollingEnabled) {
+    if (!isPollingEnabled()) {
         console.log('⏸️ Polling disabled - stopping');
         return;
     }
 
     // Prevent overlapping polls
-    if (state.isPolling) {
+    if (isCurrentlyPolling()) {
         console.log('⏸️ Skipping poll - another poll is already taking place');
         scheduleNextPoll();
         return;
@@ -29,7 +29,7 @@ async function pollPendingPodsStatus(): Promise<void> {
 
     try {
         const podStatusResponse = await queryPendingPodsStatus<PendingPodsResponse>();
-        
+
         console.log(`📥 Got the following namespace status:`)
         console.log(`🐳 Pending pods count: ${podStatusResponse.pending_pods_count}`);
         console.log(`⏱️ Highest pending duration: ${podStatusResponse.max_pending_duration_seconds}s`);
@@ -37,7 +37,7 @@ async function pollPendingPodsStatus(): Promise<void> {
 
         // Alert decision logic is in the backend
         if (podStatusResponse.alert) {
-            const durationText = podStatusResponse.max_pending_duration_seconds > 0 
+            const durationText = podStatusResponse.max_pending_duration_seconds > 0
                 ? ` (longest pending pod: ${Math.round(podStatusResponse.max_pending_duration_seconds)}s)`
                 : '';
 
@@ -56,22 +56,18 @@ async function pollPendingPodsStatus(): Promise<void> {
 }
 
 function scheduleNextPoll(): void {
-    const state = getPollingState();
-
     // Only schedule the next poll if polling is still enabled
-    if (state.pollingEnabled) {
+    if (isPollingEnabled()) {
         const timeoutId = setTimeout(() => {
                 pollPendingPodsStatus();
             },
-            state.pollIntervalSetting);
+            getPollInterval());
         setPollingTimeoutId(timeoutId);
     }
 }
 
 export function startPolling(): void {
-    const state = getPollingState();
-
-    if (!state.pollingEnabled) {
+    if (!isPollingEnabled()) {
         console.log('🚫 Polling is disabled in settings');
         return;
     }
