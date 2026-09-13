@@ -19,17 +19,36 @@ function logPollResult(response: IPendingPodsResponse): void {
     console.log(`🚨 Alert triggered: ${response.alert}`);
 }
 
-async function pollPendingPodsStatus(): Promise<void> {
-    // Check if polling is enabled before starting
+// Decides whether a poll should run right now, handling the side effects
+// (logging, rescheduling) specific to each reason it might not.
+function shouldRunPoll(): boolean {
     if (!isPollingEnabled()) {
         console.log('⏸️ Polling disabled - stopping');
-        return;
+        return false;
     }
 
     // Prevent overlapping polls
     if (isCurrentlyPolling()) {
         console.log('⏸️ Skipping poll - another poll is already taking place');
         scheduleNextPoll();
+        return false;
+    }
+
+    return true;
+}
+
+async function fetchAndReportStatus(): Promise<void> {
+    const podStatusResponse = await queryPendingPodsStatus();
+    logPollResult(podStatusResponse);
+
+    // Alert decision logic is in the backend
+    if (podStatusResponse.alert) {
+        presentPodSentinelAlert(podStatusResponse);
+    }
+}
+
+async function pollPendingPodsStatus(): Promise<void> {
+    if (!shouldRunPoll()) {
         return;
     }
 
@@ -37,13 +56,7 @@ async function pollPendingPodsStatus(): Promise<void> {
     console.log('🔄 Checking status of pending pods');
 
     try {
-        const podStatusResponse = await queryPendingPodsStatus();
-        logPollResult(podStatusResponse);
-
-        // Alert decision logic is in the backend
-        if (podStatusResponse.alert) {
-            presentPodSentinelAlert(podStatusResponse);
-        }
+        await fetchAndReportStatus();
     } catch (err) {
         console.error('❌ Failed to query pod status:', err);
     } finally {
