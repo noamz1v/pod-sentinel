@@ -2,18 +2,18 @@ import {URLExt} from '@jupyterlab/coreutils';
 import {ServerConnection} from '@jupyterlab/services';
 import {BackendConfig, BackendConfigResponse} from './types';
 
-export async function queryPendingPodsStatus<T>(
-    endPoint = '',
+async function requestPodSentinelApi<T>(
+    endPoint: string,
     init: RequestInit = {}
 ): Promise<T> {
     const serverSettings = ServerConnection.makeSettings();
     const requestUrl = URLExt.join(
         serverSettings.baseUrl,
-        "pod-sentinel/status"
+        'pod-sentinel',
+        endPoint
     );
 
-    let response: Response;
-    response = await ServerConnection.makeRequest(requestUrl, init, serverSettings);
+    const response = await ServerConnection.makeRequest(requestUrl, init, serverSettings);
 
     if (!response.ok) {
         const data = await response.json();
@@ -23,28 +23,16 @@ export async function queryPendingPodsStatus<T>(
     return await response.json();
 }
 
-export async function updateBackendConfig(config: Partial<BackendConfig>): Promise<BackendConfigResponse> {
-    const serverSettings = ServerConnection.makeSettings();
-    const requestUrl = URLExt.join(
-        serverSettings.baseUrl,
-        "pod-sentinel/config"
-    );
+export async function queryPendingPodsStatus<T>(): Promise<T> {
+    return requestPodSentinelApi<T>('status');
+}
 
-    const init: RequestInit = {
+export async function updateBackendConfig(config: Partial<BackendConfig>): Promise<BackendConfigResponse> {
+    return requestPodSentinelApi<BackendConfigResponse>('config', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify(config)
-    };
-
-    let response: Response;
-    response = await ServerConnection.makeRequest(requestUrl, init, serverSettings);
-
-    if (!response.ok) {
-        const data = await response.json();
-        throw new ServerConnection.ResponseError(response, data.message || data.error || data);
-    }
-
-    return await response.json();
+    });
 }
