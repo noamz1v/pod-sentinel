@@ -9,9 +9,9 @@ import {
 } from './pollingManager';
 import {startPolling} from './pollingScheduler';
 import {updateBackendConfig} from './podService';
-import {PodSentinelSettings} from './types';
+import {IPodSentinelSettings} from './types';
 
-function readSettings(settings: ISettingRegistry.ISettings, logPrefix: 'Initial' | 'New'): PodSentinelSettings {
+function readSettings(settings: ISettingRegistry.ISettings, logPrefix: 'Initial' | 'New'): IPodSentinelSettings {
     const pollingEnabled = settings.get('enable_pod_sentinel_polling').composite as boolean;
     const pollIntervalMs = (settings.get('poll_interval').composite as number) * MILLISECONDS_IN_SECOND;
     const gracePeriodSeconds = settings.get('grace_period_seconds').composite as number;

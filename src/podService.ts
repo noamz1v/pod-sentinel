@@ -1,6 +1,6 @@
 import {URLExt} from '@jupyterlab/coreutils';
 import {ServerConnection} from '@jupyterlab/services';
-import {BackendConfig, BackendConfigResponse} from './types';
+import {IBackendConfig, IBackendConfigResponse} from './types';
 
 async function requestPodSentinelApi<T>(
     endPoint: string,
@@ -27,8 +27,8 @@ export async function queryPendingPodsStatus<T>(): Promise<T> {
     return requestPodSentinelApi<T>('status');
 }
 
-export async function updateBackendConfig(config: Partial<BackendConfig>): Promise<BackendConfigResponse> {
-    return requestPodSentinelApi<BackendConfigResponse>('config', {
+export async function updateBackendConfig(config: Partial<IBackendConfig>): Promise<IBackendConfigResponse> {
+    return requestPodSentinelApi<IBackendConfigResponse>('config', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'

@@ -1,7 +1,7 @@
 import {DEFAULT_POLL_INTERVAL} from './constants';
 
 interface PollingState {
-    timeoutId: NodeJS.Timeout | null;
+    timeoutId: ReturnType<typeof setTimeout> | null;
     isPolling: boolean;
     isEnabled: boolean;
     intervalMs: number;
@@ -39,7 +39,7 @@ export function setIsPolling(polling: boolean): void {
     state.isPolling = polling;
 }
 
-export function setPollingTimeoutId(timeoutId: NodeJS.Timeout | null): void {
+export function setPollingTimeoutId(timeoutId: ReturnType<typeof setTimeout> | null): void {
     state.timeoutId = timeoutId;
 }
 
