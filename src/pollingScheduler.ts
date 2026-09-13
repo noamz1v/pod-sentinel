@@ -1,5 +1,5 @@
-import {showErrorMessage} from '@jupyterlab/apputils';
 import {queryPendingPodsStatus} from './podService';
+import {presentPodSentinelAlert} from './alertPresenter';
 import {
     isPollingEnabled,
     isCurrentlyPolling,
@@ -37,15 +37,7 @@ async function pollPendingPodsStatus(): Promise<void> {
 
         // Alert decision logic is in the backend
         if (podStatusResponse.alert) {
-            const durationText = podStatusResponse.max_pending_duration_seconds > 0
-                ? ` (longest pending pod: ${Math.round(podStatusResponse.max_pending_duration_seconds)}s)`
-                : '';
-
-            void showErrorMessage(
-                'Pod Sentinel Alert',
-                `⚠️ ${podStatusResponse.pending_pods_count} pod(s) are stuck in pending state${durationText}.
-                This usually means your current user / group has exceeded its resource quota. 👉 To resolve this: 1. Stop idle CAI sessions to free up resources. 2. Reduce your resource configuration for the session 3. Contact your administrator for higher resource quotas. You can disable or customize these alerts from JupyterLab Settings Editor (Ctrl + , will get you there) → Pod Sentinel section.`
-            );
+            presentPodSentinelAlert(podStatusResponse);
         }
     } catch (err) {
         console.error('❌ Failed to query pod status:', err);
