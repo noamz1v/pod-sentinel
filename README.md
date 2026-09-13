@@ -78,6 +78,24 @@ pip install pod_sentinel
 pip uninstall pod_sentinel
 ```
 
+## Troubleshoot
+
+If you see the frontend extension but it doesn't seem to be doing anything, check that the server extension is enabled:
+
+```bash
+jupyter server extension list
+```
+
+If the server extension is installed and enabled, but you don't see the frontend extension, check that it's installed:
+
+```bash
+jupyter labextension list
+```
+
+If you never get an alert even when Spark jobs are visibly stuck:
+- Confirm polling is enabled in the JupyterLab Settings Editor (Pod Sentinel section).
+- Confirm the notebook pod's service account can `list` pods in its namespace — without that permission, the backend can't see pending pods at all.
+- Check the browser console: the frontend logs each poll cycle (pending pod count, alert status) and any request failures.
 
 ## Contributing
 
