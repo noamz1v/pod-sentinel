@@ -37,7 +37,7 @@ async function pollPendingPodsStatus(): Promise<void> {
     console.log('🔄 Checking status of pending pods');
 
     try {
-        const podStatusResponse = await queryPendingPodsStatus<IPendingPodsResponse>();
+        const podStatusResponse = await queryPendingPodsStatus();
         logPollResult(podStatusResponse);
 
         // Alert decision logic is in the backend

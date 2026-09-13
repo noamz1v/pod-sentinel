@@ -3,7 +3,7 @@
 // through the accessors/mutators below, never the underlying state shape.
 import {DEFAULT_POLL_INTERVAL} from './constants';
 
-interface PollingState {
+interface IPollingState {
     timeoutId: ReturnType<typeof setTimeout> | null;
     isPolling: boolean;
     isEnabled: boolean;
@@ -11,7 +11,7 @@ interface PollingState {
 }
 
 // Single source of truth for polling state, private to this module.
-const state: PollingState = {
+const state: IPollingState = {
     timeoutId: null,
     isPolling: false,
     isEnabled: true,

@@ -2,17 +2,17 @@
 // reads pending-pod status and pushes settings-derived config to it.
 import {URLExt} from '@jupyterlab/coreutils';
 import {ServerConnection} from '@jupyterlab/services';
-import {IBackendConfig, IBackendConfigResponse} from './types';
+import {IBackendConfig, IBackendConfigResponse, IPendingPodsResponse} from './types';
 
 async function requestPodSentinelApi<T>(
-    endPoint: string,
+    endpoint: string,
     init: RequestInit = {}
 ): Promise<T> {
     const serverSettings = ServerConnection.makeSettings();
     const requestUrl = URLExt.join(
         serverSettings.baseUrl,
         'pod-sentinel',
-        endPoint
+        endpoint
     );
 
     const response = await ServerConnection.makeRequest(requestUrl, init, serverSettings);
@@ -25,8 +25,8 @@ async function requestPodSentinelApi<T>(
     return await response.json();
 }
 
-export async function queryPendingPodsStatus<T>(): Promise<T> {
-    return requestPodSentinelApi<T>('status');
+export async function queryPendingPodsStatus(): Promise<IPendingPodsResponse> {
+    return requestPodSentinelApi<IPendingPodsResponse>('status');
 }
 
 export async function updateBackendConfig(config: Partial<IBackendConfig>): Promise<IBackendConfigResponse> {
