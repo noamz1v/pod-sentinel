@@ -9,29 +9,37 @@ import {
 } from './pollingManager';
 import {startPolling} from './pollingScheduler';
 import {updateBackendConfig} from './podService';
+import {PodSentinelSettings} from './types';
+
+function readSettings(settings: ISettingRegistry.ISettings, logPrefix: 'Initial' | 'New'): PodSentinelSettings {
+    const pollingEnabled = settings.get('enable_pod_sentinel_polling').composite as boolean;
+    const pollIntervalMs = (settings.get('poll_interval').composite as number) * MILLISECONDS_IN_SECOND;
+    const gracePeriodSeconds = settings.get('grace_period_seconds').composite as number;
+    const maxNotificationsPerPod = settings.get('max_notifications_per_pod').composite as number;
+
+    console.log(`🔧 ${logPrefix} polling setting: ${pollingEnabled ? 'enabled' : 'disabled'}`);
+    console.log(`🔧 ${logPrefix} poll interval: ${pollIntervalMs} ms`);
+    console.log(`🔧 ${logPrefix} grace period: ${gracePeriodSeconds} seconds`);
+    console.log(`🔧 ${logPrefix} max notifications per pod: ${maxNotificationsPerPod}`);
+
+    return {pollingEnabled, pollIntervalMs, gracePeriodSeconds, maxNotificationsPerPod};
+}
 
 export async function loadSettings(settingRegistry: ISettingRegistry): Promise<void> {
     try {
         const settings = await settingRegistry.load(PLUGIN_ID);
+        const initial = readSettings(settings, 'Initial');
 
-        // Get initial setting values
-        const enablePollingSetting = settings.get('enable_pod_sentinel_polling').composite as boolean;
-        const pollInterval = (settings.get('poll_interval').composite as number) * MILLISECONDS_IN_SECOND;
-        const gracePeriod = settings.get('grace_period_seconds').composite as number;
-        const maxNotificationsPerPod = settings.get('max_notifications_per_pod').composite as number;
-
-        setPollingEnabled(enablePollingSetting);
-        setPollingInterval(pollInterval);
-        
-        console.log(`🔧 Initial polling setting: ${enablePollingSetting ? 'enabled' : 'disabled'}`);
-        console.log(`🔧 Initial poll interval: ${pollInterval} ms`);
-        console.log(`🔧 Initial grace period: ${gracePeriod} seconds`);
-        console.log(`🔧 Initial max notifications per pod: ${maxNotificationsPerPod}`);
+        setPollingEnabled(initial.pollingEnabled);
+        setPollingInterval(initial.pollIntervalMs);
 
         // Sync initial grace period with backend
         console.log('🔁 Syncing initial backend config with settings editor defaults');
         try {
-            await updateBackendConfig({ grace_period_seconds: gracePeriod , max_notifications_per_pod: maxNotificationsPerPod});
+            await updateBackendConfig({
+                grace_period_seconds: initial.gracePeriodSeconds,
+                max_notifications_per_pod: initial.maxNotificationsPerPod
+            });
             console.log('🔧 Backend config synchronized');
         } catch (error) {
             console.error('❌ Failed to sync backend config:', error);
@@ -40,22 +48,14 @@ export async function loadSettings(settingRegistry: ISettingRegistry): Promise<v
         // Listen for setting changes
         settings.changed.connect(async () => {
             console.log('🔧 Pod sentinel recognized settings changed');
-            const newEnablePolling = settings.get('enable_pod_sentinel_polling').composite as boolean;
-            const newPollInterval = (settings.get('poll_interval').composite as number) * MILLISECONDS_IN_SECOND;
-            const newGracePeriod = settings.get('grace_period_seconds').composite as number;
-            const newMaxNotificationsPerPod = settings.get('max_notifications_per_pod').composite as number;
-        
-            console.log(`🔧 New polling setting: ${newEnablePolling ? 'enabled' : 'disabled'}`);
-            console.log(`🔧 New poll interval: ${newPollInterval} ms`);
-            console.log(`🔧 New grace period: ${newGracePeriod} seconds`);
-            console.log(`🔧 New max notifications per pod: ${newMaxNotificationsPerPod}`);
+            const updated = readSettings(settings, 'New');
 
-            setPollingInterval(newPollInterval);
+            setPollingInterval(updated.pollIntervalMs);
             const currentState = getPollingState();
 
             // Handle polling enable/disable
-            if (newEnablePolling !== currentState.pollingEnabled) {
-                if (newEnablePolling) {
+            if (updated.pollingEnabled !== currentState.pollingEnabled) {
+                if (updated.pollingEnabled) {
                     enablePolling();
                     startPolling();
                 } else {
@@ -63,11 +63,14 @@ export async function loadSettings(settingRegistry: ISettingRegistry): Promise<v
                 }
             }
 
-                console.log('🔁 Syncing new grace period with backend');
+            console.log('🔁 Syncing new grace period with backend');
             try {
-                await updateBackendConfig({ grace_period_seconds: newGracePeriod , max_notifications_per_pod: newMaxNotificationsPerPod});
-                console.log(`🔧 Backend grace period updated to: ${newGracePeriod} seconds`);
-                console.log(`🔧 Backend max notifications per pod updated to: ${newMaxNotificationsPerPod}`);
+                await updateBackendConfig({
+                    grace_period_seconds: updated.gracePeriodSeconds,
+                    max_notifications_per_pod: updated.maxNotificationsPerPod
+                });
+                console.log(`🔧 Backend grace period updated to: ${updated.gracePeriodSeconds} seconds`);
+                console.log(`🔧 Backend max notifications per pod updated to: ${updated.maxNotificationsPerPod}`);
             } catch (error) {
                 console.error('❌ Failed to update backend configuration:', error);
             }

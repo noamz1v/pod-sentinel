@@ -1,3 +1,10 @@
+export interface PodSentinelSettings {
+    pollingEnabled: boolean;
+    pollIntervalMs: number;
+    gracePeriodSeconds: number;
+    maxNotificationsPerPod: number;
+}
+
 export interface PendingPodsResponse {
     alert: boolean;
     pending_pods_count: number;
