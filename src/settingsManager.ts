@@ -1,3 +1,6 @@
+// Loads Pod Sentinel settings from the JupyterLab Settings Registry, keeps
+// pollingManager's state in sync with them, and pushes the backend-relevant
+// values (grace period, max notifications) to pod_sentinel/handlers.py.
 import {ISettingRegistry} from '@jupyterlab/settingregistry';
 import {PLUGIN_ID, MILLISECONDS_IN_SECOND} from './constants';
 import {

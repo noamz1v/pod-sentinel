@@ -1,3 +1,6 @@
+// Encapsulates the extension's polling state (enabled/disabled, in-flight
+// flag, interval, timer handle). Other modules interact with it only
+// through the accessors/mutators below, never the underlying state shape.
 import {DEFAULT_POLL_INTERVAL} from './constants';
 
 interface PollingState {

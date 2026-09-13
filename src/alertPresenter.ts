@@ -1,3 +1,5 @@
+// Builds and displays the user-facing alert when the backend reports pods
+// stuck pending long enough to suggest a quota issue.
 import {showErrorMessage} from '@jupyterlab/apputils';
 import {IPendingPodsResponse} from './types';
 

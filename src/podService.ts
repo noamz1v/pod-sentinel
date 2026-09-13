@@ -1,3 +1,5 @@
+// HTTP client for the pod-sentinel backend API (see pod_sentinel/handlers.py):
+// reads pending-pod status and pushes settings-derived config to it.
 import {URLExt} from '@jupyterlab/coreutils';
 import {ServerConnection} from '@jupyterlab/services';
 import {IBackendConfig, IBackendConfigResponse} from './types';
