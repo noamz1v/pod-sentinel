@@ -28,56 +28,57 @@ function readSettings(settings: ISettingRegistry.ISettings, logPrefix: 'Initial'
     return {pollingEnabled, pollIntervalMs, gracePeriodSeconds, maxNotificationsPerPod};
 }
 
+function applyInitialPollingState(settings: IPodSentinelSettings): void {
+    setPollingEnabled(settings.pollingEnabled);
+    setPollingInterval(settings.pollIntervalMs);
+}
+
+function applyPollingStateChange(settings: IPodSentinelSettings): void {
+    setPollingInterval(settings.pollIntervalMs);
+
+    if (settings.pollingEnabled === isPollingEnabled()) {
+        return;
+    }
+
+    if (settings.pollingEnabled) {
+        enablePolling();
+        startPolling();
+    } else {
+        disablePolling();
+    }
+}
+
+async function syncBackendConfig(settings: IPodSentinelSettings): Promise<void> {
+    console.log('🔁 Syncing backend config (grace period, max notifications per pod)');
+    try {
+        await updateBackendConfig({
+            grace_period_seconds: settings.gracePeriodSeconds,
+            max_notifications_per_pod: settings.maxNotificationsPerPod
+        });
+        console.log(`🔧 Backend config synchronized: grace period ${settings.gracePeriodSeconds}s, max notifications per pod ${settings.maxNotificationsPerPod}`);
+    } catch (error) {
+        console.error('❌ Failed to sync backend config:', error);
+    }
+}
+
+function watchSettingsChanges(settings: ISettingRegistry.ISettings): void {
+    settings.changed.connect(async () => {
+        console.log('🔧 Pod sentinel recognized settings changed');
+        const updated = readSettings(settings, 'New');
+
+        applyPollingStateChange(updated);
+        await syncBackendConfig(updated);
+    });
+}
+
 export async function loadSettings(settingRegistry: ISettingRegistry): Promise<void> {
     try {
         const settings = await settingRegistry.load(PLUGIN_ID);
         const initial = readSettings(settings, 'Initial');
 
-        setPollingEnabled(initial.pollingEnabled);
-        setPollingInterval(initial.pollIntervalMs);
-
-        // Sync initial grace period with backend
-        console.log('🔁 Syncing initial backend config with settings editor defaults');
-        try {
-            await updateBackendConfig({
-                grace_period_seconds: initial.gracePeriodSeconds,
-                max_notifications_per_pod: initial.maxNotificationsPerPod
-            });
-            console.log('🔧 Backend config synchronized');
-        } catch (error) {
-            console.error('❌ Failed to sync backend config:', error);
-        }
-
-        // Listen for setting changes
-        settings.changed.connect(async () => {
-            console.log('🔧 Pod sentinel recognized settings changed');
-            const updated = readSettings(settings, 'New');
-
-            setPollingInterval(updated.pollIntervalMs);
-
-            // Handle polling enable/disable
-            if (updated.pollingEnabled !== isPollingEnabled()) {
-                if (updated.pollingEnabled) {
-                    enablePolling();
-                    startPolling();
-                } else {
-                    disablePolling();
-                }
-            }
-
-            console.log('🔁 Syncing new grace period with backend');
-            try {
-                await updateBackendConfig({
-                    grace_period_seconds: updated.gracePeriodSeconds,
-                    max_notifications_per_pod: updated.maxNotificationsPerPod
-                });
-                console.log(`🔧 Backend grace period updated to: ${updated.gracePeriodSeconds} seconds`);
-                console.log(`🔧 Backend max notifications per pod updated to: ${updated.maxNotificationsPerPod}`);
-            } catch (error) {
-                console.error('❌ Failed to update backend configuration:', error);
-            }
-        });
-
+        applyInitialPollingState(initial);
+        await syncBackendConfig(initial);
+        watchSettingsChanges(settings);
     } catch (error) {
         console.error('❌ Failed to load settings:', error);
         // Default to enable if settings can't be loaded

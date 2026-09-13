@@ -8,6 +8,15 @@ import {loadSettings} from './settingsManager';
 import {startPolling} from './pollingScheduler';
 import {stopPolling, isPollingEnabled} from './pollingManager';
 
+// Ensure that polling is stopped when the app is closed
+function stopPollingOnUnload(app: JupyterFrontEnd): void {
+    app.restored.then(() => {
+        window.addEventListener('beforeunload', () => {
+            stopPolling();
+        });
+    });
+}
+
 const plugin: JupyterFrontEndPlugin<void> = {
     id: PLUGIN_ID,
     description: 'A JupyterLab extension for Cloudera AI runtime that monitors your Kubernetes namespace for pending pods and alerts you when resource constraints may be blocking your workloads.',
@@ -22,12 +31,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
             startPolling();
         }
 
-        // Ensure that polling is stopped when the app is closed
-        app.restored.then(() => {
-            window.addEventListener('beforeunload', () => {
-                stopPolling();
-            });
-        });
+        stopPollingOnUnload(app);
     }
 };
 

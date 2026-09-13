@@ -12,6 +12,13 @@ import {
 } from './pollingManager';
 import {IPendingPodsResponse} from './types';
 
+function logPollResult(response: IPendingPodsResponse): void {
+    console.log('📥 Got the following namespace status:');
+    console.log(`🐳 Pending pods count: ${response.pending_pods_count}`);
+    console.log(`⏱️ Highest pending duration: ${response.max_pending_duration_seconds}s`);
+    console.log(`🚨 Alert triggered: ${response.alert}`);
+}
+
 async function pollPendingPodsStatus(): Promise<void> {
     // Check if polling is enabled before starting
     if (!isPollingEnabled()) {
@@ -31,11 +38,7 @@ async function pollPendingPodsStatus(): Promise<void> {
 
     try {
         const podStatusResponse = await queryPendingPodsStatus<IPendingPodsResponse>();
-
-        console.log('📥 Got the following namespace status:');
-        console.log(`🐳 Pending pods count: ${podStatusResponse.pending_pods_count}`);
-        console.log(`⏱️ Highest pending duration: ${podStatusResponse.max_pending_duration_seconds}s`);
-        console.log(`🚨 Alert triggered: ${podStatusResponse.alert}`);
+        logPollResult(podStatusResponse);
 
         // Alert decision logic is in the backend
         if (podStatusResponse.alert) {
