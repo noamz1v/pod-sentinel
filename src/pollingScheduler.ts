@@ -1,5 +1,3 @@
-// Drives the recurring poll loop: on each tick, fetches pod status from the
-// backend and hands off to alertPresenter when an alert is due.
 import {queryPendingPodsStatus} from './podService';
 import {presentPodSentinelAlert} from './alertPresenter';
 import {
