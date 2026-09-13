@@ -35,7 +35,7 @@ def _get_k8s_client():
 
 
 def get_pending_pod_status():
-    # Use for testing purposes
+    # # Use for testing purposes
     # if random.random() < 0.8:  # 80% chance of simulating pending pods
     #     return {
     #         "alert": True,

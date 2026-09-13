@@ -6,7 +6,16 @@ import {ISettingRegistry} from '@jupyterlab/settingregistry';
 import {PLUGIN_ID} from './constants';
 import {loadSettings} from './settingsManager';
 import {startPolling} from './pollingScheduler';
-import {stopPolling, getPollingState} from './pollingManager';
+import {stopPolling, isPollingEnabled} from './pollingManager';
+
+// Ensure that polling is stopped when the app is closed
+function stopPollingOnUnload(app: JupyterFrontEnd): void {
+    app.restored.then(() => {
+        window.addEventListener('beforeunload', () => {
+            stopPolling();
+        });
+    });
+}
 
 const plugin: JupyterFrontEndPlugin<void> = {
     id: PLUGIN_ID,
@@ -18,17 +27,11 @@ const plugin: JupyterFrontEndPlugin<void> = {
 
         await loadSettings(settingRegistry);
 
-        const state = getPollingState();
-        if (state.pollingEnabled) {
+        if (isPollingEnabled()) {
             startPolling();
         }
 
-        // Ensure that polling is stopped when the app is closed
-        app.restored.then(() => {
-            window.addEventListener('beforeunload', () => {
-                stopPolling();
-            });
-        });
+        stopPollingOnUnload(app);
     }
 };
 
