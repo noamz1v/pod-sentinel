@@ -1,64 +1,64 @@
-import {DEFAULT_POLL_INTERVAL} from './constants';
+import { DEFAULT_POLL_INTERVAL } from './constants';
 
 interface IPollingState {
-    timeoutId: ReturnType<typeof setTimeout> | null;
-    isPolling: boolean;
-    isEnabled: boolean;
-    intervalMs: number;
+  timeoutId: ReturnType<typeof setTimeout> | null;
+  isPolling: boolean;
+  isEnabled: boolean;
+  intervalMs: number;
 }
 
 // Single source of truth for polling state, private to this module.
 const state: IPollingState = {
-    timeoutId: null,
-    isPolling: false,
-    isEnabled: true,
-    intervalMs: DEFAULT_POLL_INTERVAL
+  timeoutId: null,
+  isPolling: false,
+  isEnabled: true,
+  intervalMs: DEFAULT_POLL_INTERVAL
 };
 
 export function isPollingEnabled(): boolean {
-    return state.isEnabled;
+  return state.isEnabled;
 }
 
 export function isCurrentlyPolling(): boolean {
-    return state.isPolling;
+  return state.isPolling;
 }
 
 export function getPollInterval(): number {
-    return state.intervalMs;
+  return state.intervalMs;
 }
 
 export function setPollingEnabled(enabled: boolean): void {
-    state.isEnabled = enabled;
+  state.isEnabled = enabled;
 }
 
 export function setPollingInterval(interval: number): void {
-    state.intervalMs = interval;
+  state.intervalMs = interval;
 }
 
 export function setIsPolling(polling: boolean): void {
-    state.isPolling = polling;
+  state.isPolling = polling;
 }
 
 export function setPollingTimeoutId(timeoutId: ReturnType<typeof setTimeout> | null): void {
-    state.timeoutId = timeoutId;
+  state.timeoutId = timeoutId;
 }
 
 export function stopPolling(): void {
-    console.log('⏹️ Stopping pod status polling');
-    if (state.timeoutId) {
-        clearTimeout(state.timeoutId);
-        state.timeoutId = null;
-    }
-    state.isPolling = false;
+  console.log('⏹️ Stopping pod status polling');
+  if (state.timeoutId) {
+    clearTimeout(state.timeoutId);
+    state.timeoutId = null;
+  }
+  state.isPolling = false;
 }
 
 export function enablePolling(): void {
-    state.isEnabled = true;
-    console.log('✅ Pod sentinel polling enabled');
+  state.isEnabled = true;
+  console.log('✅ Pod sentinel polling enabled');
 }
 
 export function disablePolling(): void {
-    state.isEnabled = false;
-    console.log('🔴 Pod sentinel polling disabled');
-    stopPolling();
+  state.isEnabled = false;
+  console.log('🔴 Pod sentinel polling disabled');
+  stopPolling();
 }
